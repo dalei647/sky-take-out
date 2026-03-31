@@ -9,6 +9,12 @@
         VALUES (#{name}, #{categoryId}, #{price}, #{image}, #{description}, #{status}, #{createTime}, #{updateTime},
                 #{createUser}, #{updateUser})
     </insert>
+    <delete id="deleteByIds">
+        delete from dish where id in
+            <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+            </foreach>
+    </delete>
     <select id="pageQuery" resultType="com.sky.vo.DishVO">
         select d.*, c.name as categoryName from dish d left join category c on d.category_id = c.id
         <where>
@@ -17,5 +23,12 @@
             <if test="categoryId != null">and d.category_id = #{categoryId}</if>
         </where>
         order by d.create_time desc
+    </select>
+    <select id="selectByIds" resultType="com.sky.entity.Dish">
+        select * from dish where id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+        and status = 1
     </select>
 </mapper>

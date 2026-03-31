@@ -1,4 +1,4 @@
-package com.sky.config;
+package com.sky.controller.admin;
 
 
 import com.sky.constant.MessageConstant;
