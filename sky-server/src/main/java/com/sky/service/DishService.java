@@ -31,4 +31,6 @@ public interface DishService {
     void update(DishDTO dishDTO);
 
     void startOrStop(Integer status, Long id);
+
+    DishVO getByCategoryId(Long categoryId);
 }

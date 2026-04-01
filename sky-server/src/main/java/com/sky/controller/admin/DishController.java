@@ -66,10 +66,28 @@ public class DishController {
         return Result.success();
     }
 
+    /**
+     * 启用禁用菜品
+     * @param status
+     * @param id
+     * @return
+     */
     @PostMapping("/status/{status}")
     public Result startOrStop(@PathVariable Integer status, Long id){
         log.info("启用禁用菜品：{}", status);
         dishService.startOrStop(status, id);
         return Result.success();
+    }
+
+    /**
+     * 根据分类id查询菜品
+     * @param categoryId
+     * @return
+     */
+    @GetMapping("list")
+    public Result<DishVO> getByCategoryId(Long categoryId){
+        log.info("根据分类id查询菜品：{}", categoryId);
+        DishVO dish = dishService.getByCategoryId(categoryId);
+        return Result.success(dish);
     }
 }
