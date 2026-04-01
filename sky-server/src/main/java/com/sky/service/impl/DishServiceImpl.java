@@ -3,6 +3,7 @@ package com.sky.service.impl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
+import com.sky.constant.StatusConstant;
 import com.sky.dto.DishDTO;
 import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Dish;
@@ -65,7 +66,10 @@ public class DishServiceImpl implements DishService {
         return new PageResult(total, result);
     }
 
-    @Override
+   /**
+     * 批量删除菜品
+     * @param ids
+     */
     @Transactional
     public void deleteBatch(List<Long> ids) {
         // 是否存在起售的商品
@@ -105,7 +109,10 @@ public class DishServiceImpl implements DishService {
         return dishVO;
     }
 
-    @Override
+    /**
+     * 修改菜品
+     * @param dishDTO
+     */
     public void update(DishDTO dishDTO) {
         Dish dish = new Dish();
         BeanUtils.copyProperties(dishDTO, dish);
@@ -126,7 +133,11 @@ public class DishServiceImpl implements DishService {
         }
     }
 
-    @Override
+    /**
+     * 启用禁用菜品
+     * @param status
+     * @param id
+     */
     public void startOrStop(Integer status, Long id) {
         //根据id查询菜品数据
         Dish dish = dishMapper.getById(id);
@@ -136,16 +147,17 @@ public class DishServiceImpl implements DishService {
         dishMapper.update(dish);
     }
 
-    @Override
-    public DishVO getByCategoryId(Long categoryId) {
-        Dish dish = dishMapper.getByCategoryId(categoryId);
-        //根据菜品id查询口味数据
-        List<DishFlavor> dishFlavors = dishFlavorMapper.getByDishId(categoryId);
-        //将查询到的数据封装到VO
-        DishVO dishVO = new DishVO();
-        BeanUtils.copyProperties(dish, dishVO);
-        dishVO.setFlavors(dishFlavors);
-        return dishVO;
+    /**
+     * 根据分类id查询菜品
+     * @param categoryId
+     * @return
+     */
+    public List<Dish> getByCategoryId(Long categoryId) {
+        Dish dish = Dish.builder()
+                .categoryId(categoryId)
+                .status(StatusConstant.ENABLE)
+                .build();
+        return dishMapper.getByCategoryId(dish);
     }
 
 }
