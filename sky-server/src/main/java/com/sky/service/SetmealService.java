@@ -7,6 +7,8 @@ import com.sky.entity.Setmeal;
 import com.sky.result.PageResult;
 import com.sky.vo.SetmealVO;
 
+import java.util.List;
+
 public interface SetmealService {
     void insert(SetmealDTO setmealDTO);
 
@@ -15,4 +17,6 @@ public interface SetmealService {
     SetmealVO getById(Long id);
 
     void update(SetmealDTO setmealDTO);
+
+    void delete(List<Long> ids);
 }
