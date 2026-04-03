@@ -85,4 +85,17 @@ public class SetmealController {
         setmealService.delete(ids);
         return Result.success();
     }
+
+    /**
+     * 启用禁用套餐
+     * @param status
+     * @param id
+     * @return
+     */
+    @PostMapping("/status/{status}")
+    public Result startOrStop(@PathVariable Integer status, Long id){
+        log.info("启用禁用套餐：{}", id);
+        setmealService.startOrStop(status, id);
+        return Result.success();
+    }
 }
