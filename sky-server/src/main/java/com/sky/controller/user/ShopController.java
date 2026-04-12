@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 public class ShopController {
 
     @Autowired
-    RedisTemplate redisTemplate;
+    private RedisTemplate redisTemplate;
 
     public static final String KEY = "SHOP_STATUS";
 
