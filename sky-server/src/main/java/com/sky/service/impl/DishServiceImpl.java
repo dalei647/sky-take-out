@@ -166,6 +166,7 @@ public class DishServiceImpl implements DishService {
      * @param categoryId
      * @return
      */
+    @Transactional
     public List<DishVO> getDishByCategoryId(Long categoryId) {
         Dish dish = Dish.builder()
                 .categoryId(categoryId)
