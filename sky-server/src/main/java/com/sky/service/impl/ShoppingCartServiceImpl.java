@@ -12,6 +12,9 @@ import com.sky.mapper.ShoppingCartMapper;
 import com.sky.properties.JwtProperties;
 import com.sky.service.ShoppingCartService;
 import com.sky.utils.JwtUtil;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import jdk.jpackage.internal.Log;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 public class ShoppingCartServiceImpl implements ShoppingCartService {
 
@@ -77,7 +81,34 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
      */
     public List<ShoppingCart> list() {
         Long userId = BaseContext.getCurrentId();
-        List<ShoppingCart> list = shoppingCartMapper.selectByUserId(userId);
+        ShoppingCart shoppingCart = ShoppingCart.builder().userId(userId).build();
+        List<ShoppingCart> list = shoppingCartMapper.select(shoppingCart);
         return list;
+    }
+
+    @Override
+    public void sub(ShoppingCart shoppingCartDTO) {
+        ShoppingCart shoppingCart = new ShoppingCart();
+        BeanUtils.copyProperties(shoppingCartDTO, shoppingCart);
+        shoppingCart.setUserId(BaseContext.getCurrentId());
+        // 查询购物车数据
+        List<ShoppingCart> list = shoppingCartMapper.select(shoppingCart);
+        ShoppingCart item = list.get(0);
+        if(item.getNumber() > 1){
+            // 数量大于1则数量减1
+            item.setNumber(item.getNumber() - 1);
+            shoppingCartMapper.update(item);
+        }else{
+            // 数量为1则删除该数据
+            shoppingCartMapper.deleteById(item.getId());
+        }
+    }
+
+    /**
+     * 清空购物车
+     */
+    public void clean() {
+        Long userId = BaseContext.getCurrentId();
+        shoppingCartMapper.cleanByUserId(userId);
     }
 }
