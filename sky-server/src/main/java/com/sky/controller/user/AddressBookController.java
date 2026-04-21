@@ -38,7 +38,9 @@ public class AddressBookController {
     @GetMapping("/list")
     public Result<List<AddressBook>> list(){
         log.info("查询当前登录用户所有地址");
-        List<AddressBook> list = addressBookService.list();
+        AddressBook addressBook = new AddressBook();
+        addressBook.setUserId(BaseContext.getCurrentId());
+        List<AddressBook> list = addressBookService.list(addressBook);
         return Result.success(list);
     }
 
@@ -49,8 +51,11 @@ public class AddressBookController {
     @GetMapping("/default")
     public Result<AddressBook> getDefaultAddress(){
         log.info("查询当前登录用户默认地址");
-        List<AddressBook> list = addressBookService.list();
-        if (list != null && list.size() == 1) {
+        AddressBook addressBook = new AddressBook();
+        addressBook.setUserId(BaseContext.getCurrentId());
+        addressBook.setIsDefault(1);
+        List<AddressBook> list = addressBookService.list(addressBook);
+        if (list != null && list.size() > 0) {
             return Result.success(list.get(0));
         }
         return Result.error("没有查询到默认地址");

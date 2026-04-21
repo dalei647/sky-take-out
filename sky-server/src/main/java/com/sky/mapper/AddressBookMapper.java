@@ -21,19 +21,12 @@ public interface AddressBookMapper {
 
 
     /**
-     * 查询指定用户的所有地址
-     * @param userId
+     * 条件查询
+     * @param addressBook
      * @return
      */
-    @Select("select * from address_book where user_id = #{userId}")
-    List<AddressBook> list(Long userId);
+    List<AddressBook> list(AddressBook addressBook);
 
-    /**
-     * 查询指定用户的默认地址
-     * @return
-     */
-    @Select("select * from address_book where user_id = #{userId} and is_default = 1")
-    AddressBook getDefaultAddress(Long userId);
 
     /**
      * 根据id查询地址

@@ -7,7 +7,7 @@ import java.util.List;
 public interface AddressBookService {
     void add(AddressBook addressBook);
 
-    List<AddressBook> list();
+    List<AddressBook> list(AddressBook addressBook);
 
     AddressBook selectById(Long id);
 

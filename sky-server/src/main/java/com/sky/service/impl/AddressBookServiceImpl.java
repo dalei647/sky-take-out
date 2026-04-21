@@ -31,8 +31,8 @@ public class AddressBookServiceImpl implements AddressBookService {
      * 查询当前登录用户的所有地址
      * @return
      */
-    public List<AddressBook> list() {
-        return addressBookMapper.list(BaseContext.getCurrentId());
+    public List<AddressBook> list(AddressBook addressBook) {
+        return addressBookMapper.list(addressBook);
     }
 
     /**
@@ -50,7 +50,9 @@ public class AddressBookServiceImpl implements AddressBookService {
      */
     public void setDefault(AddressBook addressBook) {
         // 先将当前登录用户的所有地址设置为非默认地址
-        List<AddressBook> list = addressBookMapper.list(BaseContext.getCurrentId());
+        AddressBook addressBook1 = new AddressBook();
+        addressBook1.setUserId(BaseContext.getCurrentId());
+        List<AddressBook> list = addressBookMapper.list(addressBook1);
         list.forEach(address -> {
             address.setIsDefault(0);
             addressBookMapper.update(address);
