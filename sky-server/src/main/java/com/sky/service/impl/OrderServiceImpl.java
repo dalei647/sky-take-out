@@ -1,20 +1,21 @@
 package com.sky.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
+import com.sky.dto.OrdersPaymentDTO;
 import com.sky.dto.OrdersSubmitDTO;
-import com.sky.entity.AddressBook;
-import com.sky.entity.OrderDetail;
-import com.sky.entity.Orders;
-import com.sky.entity.ShoppingCart;
+import com.sky.entity.*;
 import com.sky.exception.AddressBookBusinessException;
-import com.sky.mapper.AddressBookMapper;
-import com.sky.mapper.OrderDetailMapper;
-import com.sky.mapper.OrderMapper;
-import com.sky.mapper.ShoppingCartMapper;
+import com.sky.exception.OrderBusinessException;
+import com.sky.mapper.*;
+import com.sky.properties.WeChatProperties;
 import com.sky.service.OrderService;
 import com.sky.service.ShoppingCartService;
+import com.sky.utils.WeChatPayUtil;
+import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderSubmitVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
@@ -22,11 +23,13 @@ import org.springframework.data.redis.connection.SortParameters;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Slf4j
 public class OrderServiceImpl implements OrderService {
 
     @Autowired
@@ -38,8 +41,11 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private ShoppingCartMapper shoppingCartMapper;
     @Autowired
-    private ShoppingCartService shoppingCartService;
-
+    private UserMapper userMapper;
+    @Autowired
+    private WeChatPayUtil weChatPayUtil;
+    @Autowired
+    private WeChatProperties weChatProperties;
 
     /**
      * 用户下单
@@ -55,7 +61,9 @@ public class OrderServiceImpl implements OrderService {
             throw new AddressBookBusinessException(MessageConstant.ADDRESS_BOOK_IS_NULL);
         }
         // 查询当前用户的购物车数据
-        List<ShoppingCart> list = shoppingCartService.list();
+        ShoppingCart shoppingCart = new ShoppingCart();
+        shoppingCart.setUserId(BaseContext.getCurrentId());
+        List<ShoppingCart> list = shoppingCartMapper.select(shoppingCart);
         if(list == null || list.size() == 0){
             // 购物车为空,抛出业务异常
             throw new AddressBookBusinessException(MessageConstant.SHOPPING_CART_IS_NULL);
@@ -76,9 +84,9 @@ public class OrderServiceImpl implements OrderService {
 
         List<OrderDetail> orderdetails = new ArrayList<>();
         // 向订单明细表插入多条数据
-        list.forEach(shoppingCart -> {
+        list.forEach(it -> {
             OrderDetail orderDetail = new OrderDetail();
-            BeanUtils.copyProperties(shoppingCart, orderDetail);
+            BeanUtils.copyProperties(it, orderDetail);
             orderDetail.setOrderId(orders.getId());
             orderdetails.add(orderDetail);
         });
@@ -96,5 +104,67 @@ public class OrderServiceImpl implements OrderService {
                 .build();
 
         return orderSubmitVO;
+    }
+
+    /**
+     * 订单支付
+     * 暂时跳过微信支付
+     * @param ordersPaymentDTO
+     * @return
+     */
+    public OrderPaymentVO payment(OrdersPaymentDTO ordersPaymentDTO) throws Exception {
+//        // 当前登录用户id
+//        Long userId = BaseContext.getCurrentId();
+//        User user = userMapper.getById(userId);
+//
+//        //调用微信支付接口，生成预支付交易单
+//        JSONObject jsonObject = weChatPayUtil.pay(
+//                ordersPaymentDTO.getOrderNumber(), //商户订单号
+//                new BigDecimal(0.01), //支付金额，单位 元
+//                "苍穹外卖订单", //商品描述
+//                user.getOpenid() //微信用户的openid
+//        );
+//
+//        if (jsonObject.getString("code") != null && jsonObject.getString("code").equals("ORDERPAID")) {
+//            throw new OrderBusinessException("该订单已支付");
+//        }
+//
+//        OrderPaymentVO vo = jsonObject.toJavaObject(OrderPaymentVO.class);
+//        vo.setPackageStr(jsonObject.getString("package"));
+//
+//        return vo;
+
+        Long userId = BaseContext.getCurrentId();
+        String orderNumber = ordersPaymentDTO.getOrderNumber();
+        Orders orders = orderMapper.getByNumber(orderNumber);
+        orders.setStatus(Orders.TO_BE_CONFIRMED);
+        orders.setPayMethod(1);
+        orders.setPayStatus(Orders.PAID);
+        orders.setUserId(userId);
+        orders.setOrderTime(LocalDateTime.now());
+
+        orderMapper.update(orders);
+        return null;
+    }
+
+    /**
+     * 支付成功，修改订单状态
+     *
+     * @param outTradeNo
+     */
+    public void paySuccess(String outTradeNo) {
+
+        // 根据订单号查询订单
+        Orders ordersDB = orderMapper.getByNumber(outTradeNo);
+
+        // 根据订单id更新订单的状态、支付方式、支付状态、结账时间
+        Orders orders = Orders.builder()
+                .id(ordersDB.getId())
+                .status(Orders.TO_BE_CONFIRMED)
+                .payStatus(Orders.PAID)
+                .checkoutTime(LocalDateTime.now())
+                .build();
+
+        orderMapper.update(orders);
     }
 }
