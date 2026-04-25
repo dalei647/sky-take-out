@@ -4,20 +4,15 @@ import com.github.pagehelper.Page;
 import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.entity.Orders;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface OrderMapper {
-
-    /**
-     * 订单分页查询
-     * @param ordersPageQueryDTO
-     * @return
-     */
-    Page<Orders> getHistoryOrders(OrdersPageQueryDTO ordersPageQueryDTO);
 
     /**
      * 插入订单数据
@@ -67,4 +62,16 @@ public interface OrderMapper {
      */
     @Select("select * from orders where status = #{status} and order_time < #{orderTime}")
     List<Orders> getByStatusAndOrdertimeLT(Integer status, LocalDateTime orderTime);
+
+
+    /**
+     * 根据条件统计营业额
+     * @param beginTime 开始时间
+     * @param endTime 结束时间
+     * @param status 订单状态
+     * @return 营业额
+     */
+    Double sumByMap(@Param("beginTime") LocalDateTime beginTime,
+                    @Param("endTime") LocalDateTime endTime,
+                    @Param("status") Integer status);
 }

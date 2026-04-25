@@ -126,10 +126,10 @@ public class OrderServiceImpl implements OrderService {
      * @return
      */
     public OrderPaymentVO payment(OrdersPaymentDTO ordersPaymentDTO) throws Exception {
-//        // 当前登录用户id
-//        Long userId = BaseContext.getCurrentId();
-//        User user = userMapper.getById(userId);
-//
+        // 当前登录用户id
+        Long userId = BaseContext.getCurrentId();
+        User user = userMapper.getById(userId);
+
 //        //调用微信支付接口，生成预支付交易单
 //        JSONObject jsonObject = weChatPayUtil.pay(
 //                ordersPaymentDTO.getOrderNumber(), //商户订单号
@@ -141,23 +141,15 @@ public class OrderServiceImpl implements OrderService {
 //        if (jsonObject.getString("code") != null && jsonObject.getString("code").equals("ORDERPAID")) {
 //            throw new OrderBusinessException("该订单已支付");
 //        }
-//
-//        OrderPaymentVO vo = jsonObject.toJavaObject(OrderPaymentVO.class);
-//        vo.setPackageStr(jsonObject.getString("package"));
-//
-//        return vo;
 
-        Long userId = BaseContext.getCurrentId();
-        String orderNumber = ordersPaymentDTO.getOrderNumber();
-        Orders orders = orderMapper.getByNumber(orderNumber);
-        orders.setStatus(Orders.TO_BE_CONFIRMED);
-        orders.setPayMethod(1);
-        orders.setPayStatus(Orders.PAID);
-        orders.setUserId(userId);
-        orders.setOrderTime(LocalDateTime.now());
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("code", "ORDERPAID");
+        OrderPaymentVO vo = jsonObject.toJavaObject(OrderPaymentVO.class);
+        vo.setPackageStr(jsonObject.getString("package"));
 
-        orderMapper.update(orders);
-        return null;
+        log.info("跳过微信支付，支付成功");
+        paySuccess(ordersPaymentDTO.getOrderNumber());
+        return vo;
     }
 
     /**
