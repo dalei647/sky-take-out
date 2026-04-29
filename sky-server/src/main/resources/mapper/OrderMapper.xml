@@ -59,5 +59,13 @@
             <if test="endTime != null">and order_time &lt;= #{endTime}</if>
         </where>
     </select>
+    <select id="getOrderCount" resultType="java.lang.Integer">
+        select count(id) from orders
+        <where>
+            <if test="beginTime != null">and order_time &gt;= #{beginTime}</if>
+            <if test="endTime != null">and order_time &lt;= #{endTime}</if>
+            <if test="completed != null">and status = #{completed}</if>
+        </where>
+    </select>
 
 </mapper>
