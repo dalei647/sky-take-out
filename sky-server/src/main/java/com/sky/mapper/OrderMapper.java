@@ -80,10 +80,10 @@ public interface OrderMapper {
      * 根据条件统计订单数量
      * @param beginTime
      * @param endTime
-     * @param completed
+     * @param status
      * @return
      */
-    Integer getOrderCount(LocalDateTime beginTime, LocalDateTime endTime, Integer completed);
+    Integer getOrderCount(LocalDateTime beginTime, LocalDateTime endTime, Integer status);
 
     /**
      * 查询商品销量排名
